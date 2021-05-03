@@ -52,6 +52,15 @@ Plugins are versioned using semantic versioning to minimize regressions and comp
 
 Plugins can be written in any language, as long as they export the required functions. Golang, however, is the preferred language to write plugins, followed by C/C++.
 
+### Protecting from plugin issues
+
+The libraries will do everything possible to validate the data coming from the plugins and protect Falco and the other consumers from corrupted data. However, for performance reasons, plugins will be "trusted": they will run in the same thread and address space as Falco and they could crash the program. We assume that the user will be in control of plugin loading and will make sure only trusted plugins are loaded/packaged with falco.
+
+### Plugin registry
+Every plugin requires its own, unique plugin ID to interoperate with Falco and the other plugins. The plugin ID will be used by the libs to properly process incoming events (for example, when save events to file and loading them back), and by plugins to unuambiguosly recognize their dependencies.
+
+To facilitate the allocation and distribution of plugin IDs, we will require that plugin developers request IDs for their plugins to the Falco organization. The mechanism used for plugin allocation is not determined yet and will be discussed in the future.
+
 ### golang plugin SDK
 To facilitate the development of plugins written in go, an SDK has been developed. We intend this SDK (and future SDKs for other languages) to be part of the falco organization. For this reason, we submitted the following incubation request: https://github.com/falcosecurity/evolution/issues/62
 
@@ -246,6 +255,14 @@ Extractor plugins focus on fields extraction and MUST export: `get_type`, `get_l
 `get_description`, `get_fields` and `extract_str`.
 They can optionally also export `init` and `destory`.
 
+### Loading the plugins
+
+The mechanics of loading a plugin are implemented in the libraries and leverage the dynamic library functionality of the operating system (dlopen/dlsym in unix, LoadLibrary/GetProcAddress in Windows). The plugin loading code also ensures that: 
+- the pluging is valid, i.e. that it exports the set of expected symbols
+- the plugin has a version number that is compatible with the libraries instance
+- if the loaded plugin is an extractor plugin, the exported fields have unique names that don't clash with existing ones
+
+Callers of the libraries have the flexibility to control what is loaded and from where. For example, some tools line Falco will let the user configure the plugins to load in a YAML configuration file, while other tools might use the command line.
 
 ### Examples
 
