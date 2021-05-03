@@ -10,7 +10,7 @@ This proposal, in partcular, focuses on two types of plugins: source plugins and
 
 ## Motivation
 
-libscap and libsinsp provide a powerful data capture framework, with a rich set of features that includes:
+[libscap](https://github.com/falcosecurity/libs/tree/master/userspace/libscap) and [libsinsp](https://github.com/falcosecurity/libs/tree/master/userspace/libsinsp) provide a powerful data capture framework, with a rich set of features that includes:
 - data capture
 - trace files management
 - enrichment
@@ -27,7 +27,7 @@ With this proposal, we want to dramatically extend the scope of what the librari
 - To design and implement a plugin framework that makes the libraries more modular and extensible
 - To have a framework that is easy to use
 - To support dynamic loading of plugins, so that the libraries can be extended without having to be recompiled and relinked
-- To enable users to write plugins in any language, with particular focus on go, C and C++
+- To enable users to write plugins in any language, with a particular focus on Go, C and C++
 - To have an efficient plugin framework so that, performance-wise, writing a plugin is as close as possible as extending the libraries internal source code
 - To make it possible to write plugins for Linux, MacOS and Windows
 
@@ -40,17 +40,17 @@ With this proposal, we want to dramatically extend the scope of what the librari
 
 ### Use cases
 
-- capture events from arbitrary sources and inject them into the libraries for processing --> **source plugins**
-- export and populate filtercheck-compatible fields from the captured events, that can be used in filters, Falco rules, chisels and more --> **extractor plugins**
+- **source plugins**: capture events from arbitrary sources and inject them into the libraries for processing
+- **extractor plugins**: export and populate filtercheck-compatible fields from the captured events, that can be used in filters, Falco rules, chisels and more
 - save the captured events into trace files that seamlessly encode all of the context required to parse the data
 
 ### Plugins format
 
-Plugins are dynamic libraries (.so files in Unix, .dll files in windows) that reside in specific well known locations and export a minimum set of functions that the libraries will recognize.
+Plugins are dynamic libraries (.so files in Unix, .dll files in windows) that export a minimum set of functions that the libraries will recognize.
 
 Plugins are versioned using semantic versioning to minimize regressions and compatibility issues. 
 
-Plugins can be written in any language, as long as they export the required functions. Golang, however, is the preferred language to write plugins, followed by C/C++.
+Plugins can be written in any language, as long as they export the required functions. Go, however, is the preferred language to write plugins, followed by C/C++.
 
 ### Protecting from plugin issues
 
@@ -98,12 +98,12 @@ To facilitate the development of plugins written in go, an SDK has been develope
 	//
 	// Source plugins implement a new sinsp/scap event source and MUST export: 
 	// get_type, get_last_error, get_id, get_name, get_description, open, close,
-	// next and event_to_string. They can optionally also export init, destory, 
+	// next and event_to_string. They can optionally also export init, destroy, 
 	// get_fields and extract_str.
 	//
 	// Extractor plugins focus on  MUST export: get_type, get_last_error, get_name, 
 	// get_description, get_fields and extract_str
-	// They can optionally also export init and destory.
+	// They can optionally also export init and destroy.
 	//
 	uint32_t (*get_type)();
 	//
@@ -248,12 +248,12 @@ Initially, we will implement support for two types of plugins: source plugins an
 A plugin declare its type by implementing the mandatory `get_type` function.
 
 Source plugins implement a new sinsp/scap event source and MUST export: `get_type`, `get_last_error`, `get_id`, `get_name`, `get_description`, `open`, `close`,
-`next` and `event_to_string`. They can optionally also export `init`, `destory`, 
+`next` and `event_to_string`. They can optionally also export `init`, `destroy`, 
 `get_fields` and `extract_str`.
 
 Extractor plugins focus on fields extraction and MUST export: `get_type`, `get_last_error`, `get_name`, 
 `get_description`, `get_fields` and `extract_str`.
-They can optionally also export `init` and `destory`.
+They can optionally also export `init` and `destroy`.
 
 ### Loading the plugins
 
@@ -274,6 +274,6 @@ It implements fetching cloudtrail data from an S3 bucket, and exports a number o
 
 ## Links
 
-PR with the initial implementation: https://github.com/falcosecurity/libs/pull/33
+[PR with the initial implementation](https://github.com/falcosecurity/libs/pull/33)
 
-Incubation request for the golang plugin SDK: https://github.com/falcosecurity/evolution/issues/62
+[Incubation request for the Go plugin SDK](https://github.com/falcosecurity/evolution/issues/62)
