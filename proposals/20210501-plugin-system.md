@@ -55,7 +55,7 @@ Plugins can be written in any language, as long as they export the required func
 
 ### Protecting from plugin issues
 
-The libraries will do everything possible to validate the data coming from the plugins and protect Falco and the other consumers from corrupted data. However, for performance reasons, plugins will be "trusted": they will run in the same thread and address space as Falco and they could crash the program. We assume that the user will be in control of plugin loading and will make sure only trusted plugins are loaded/packaged with falco.
+The libraries will do everything possible to validate the data coming from the plugins and protect Falco and the other consumers from corrupted data. However, for performance reasons, plugins will be "trusted": they will run in the same thread and address space as Falco and they could crash the program. We assume that the user will be in control of plugin loading and will make sure only trusted plugins are loaded/packaged with Falco.
 
 ### Plugin registry
 
@@ -65,7 +65,7 @@ To facilitate the allocation and distribution of plugin IDs, we will require tha
 
 ### golang plugin SDK
 
-To facilitate the development of plugins written in go, an SDK has been developed. We intend this SDK (and future SDKs for other languages) to be part of the falco organization. For this reason, we submitted the following incubation request: https://github.com/falcosecurity/evolution/issues/62
+To facilitate the development of plugins written in go, an SDK has been developed. We intend this SDK (and future SDKs for other languages) to be part of the Falco organization. For this reason, we submitted the following incubation request: https://github.com/falcosecurity/evolution/issues/62
 
 ### Proposed API (subject to change)
 
