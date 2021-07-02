@@ -531,7 +531,7 @@ load_plugins: [aws_cloudtrail]
 A new "plugins" property in falco.yaml will define the set of plugins that can be loaded by falco. The property contains a list of objects, with the following properties:
 
 * name: Only used for load_plugins, but by convention should be the same as the value returned by the name() api function.
-* library_path: a path to the shared library. The path can be relative, in which case it is relative to falco's "share" directory /usr/share/falco.
+* library_path: a path to the shared library. The path can be relative, in which case it is relative to falco's "share" directory under a "plugins" subdirectory e.g. /usr/share/falco/plugins.
 * init_config: If present, the exact configuration text that will be provided as an argument to the init() function.
 * init_config_file: If present, the provided file will be read and the contents will be provided as an argument to the init() function.
 * open_params: If present, the exact params text that will be provided as an argument to the open() function.
