@@ -488,6 +488,21 @@ We only need to ensure the following:
 * That only one plugin is loaded at a time that exports a given event source. For example, the libraries can load either a gke-audit-bridge plugin with event source k8s_audit, or eks-audit-bridge with event source k8s_audit, but not both.
 * That for a mix of source and extractor plugins having the same event source, that the fields are distinct. For example, a source plugin with source k8s_audit can export ka.* fields, and an extractor plugin with event source k8s_audit can export a jevt.value[/...] field, and the appropriate plugin will be used to extract fields from k8s_audit events as fields are parsed from condition expressions/output format strings.
 
+### Plugin Versions and Falco Rules
+
+To allow rules files to document the plugin versions they are compatible with, we will add a new top-level field `required_plugin_versions` to the falco rules file format. The field is optional, and if not provided no plugin compatibility checks will be performed. The syntax of `required_plugin_versions` will be the following:
+
+```yaml
+- required_plugin_versions:
+  - name: <plugin_name>
+    version: x.y.z
+  ...
+```
+
+Below required_plugin_versions is a list of objects, where each object has `name` and `version` properties. If a plugin is loaded, and if an entry in `required_plugin_versions` has a matching name, then the loaded plugin version must be semver compatible with the version property.
+
+Falco can load multiple rules files, and each file may contain its own `required_plugin_versions` property. In this case, name+version pairs across all files will be merged, and in the case of duplicate names all provided versions must be compatible.
+
 ### Loading the plugins
 
 The mechanics of loading a plugin are implemented in the libraries and leverage the dynamic library functionality of the operating system (dlopen/dlsym in unix, LoadLibrary/GetProcAddress in Windows). The plugin loading code also ensures that:
