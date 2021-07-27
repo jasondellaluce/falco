@@ -605,14 +605,9 @@ A new "load_plugins" property in falco.yaml will allow for loading a subset of t
 
 ### Examples
 
-https://github.com/leogr/plugins/tree/master/plugins/cloudtrail
+We have an initial version working, consisting of:
 
-This Go plugin implements an AWS cloudtrail source .
-
-It implements fetching cloudtrail data from an S3 bucket, and exports a number of fields that can be used in filters or rules.
-
-## Links
-
-[PR with the initial implementation](https://github.com/falcosecurity/libs/pull/33)
-
-[Incubation request for the Go plugin SDK](https://github.com/falcosecurity/evolution/issues/62)
+* A version of falcosecurity/libs that supports the [plugin framework](https://github.com/falcosecurity/libs/tree/new/plugin-system-api-additions)
+* Support code and examples for [writing plugins in go](https://github.com/mstemm/libsinsp-plugin-sdk-go/tree/new/plugin-system-api-additions)
+* A [cloudtrail](https://github.com/mstemm/plugins/tree/new/plugin-system-api-additions) plugin that can generate events from cloudtrail logs and extract fields from those events.
+* A version of falco that uses all of the above to [load and evaluate rules with plugins](https://github.com/leogr/falco/tree/new/plugin-system-api-additions)
