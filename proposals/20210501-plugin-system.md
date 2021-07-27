@@ -6,7 +6,7 @@ This is a proposal to create an infrastructure to extend the functionality of th
 
 Plugins will allow users to easily extend the functionality of the libraries and, as a consequence, of Falco and any other tool based on the libraries.
 
-This proposal, in partcular, focuses on two types of plugins: source plugins and extractor plugins.
+This proposal, in particular, focuses on two types of plugins: source plugins and extractor plugins.
 
 ## Motivation
 
@@ -19,7 +19,7 @@ This proposal, in partcular, focuses on two types of plugins: source plugins and
 - formatting and screen rendering
 - Lua scripting (chisels)
 
-These features have beed designed with one specific input in mind: system calls. However, they are generically adaptable to a broad set of inputs, such as cloud logs.
+These features have been designed with one specific input in mind: system calls. However, they are generically adaptable to a broad set of inputs, such as cloud logs.
 
 With this proposal, we want to dramatically extend the scope of what the libraries, Falco and other tools can be applied to. We want to do it in a way that is easy, efficient and empowers anyone in the community to write a plugin.
 
