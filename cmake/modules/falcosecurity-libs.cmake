@@ -16,12 +16,15 @@ set(FALCOSECURITY_LIBS_CMAKE_WORKING_DIR "${CMAKE_BINARY_DIR}/falcosecurity-libs
 
 file(MAKE_DIRECTORY ${FALCOSECURITY_LIBS_CMAKE_WORKING_DIR})
 
+# In case you want to test against a local copy of falcosecurity/libs version just pass the variable 
+# - ie., `cmake -DFALCOSECURITY_LIBS_SOURCE_DIR=/path/to/falcosecurity/libs ..`
 if(FALCOSECURITY_LIBS_SOURCE_DIR)
   set(FALCOSECURITY_LIBS_VERSION "local")
   message(STATUS "Using local falcosecurity/libs in '${FALCOSECURITY_LIBS_SOURCE_DIR}'")
 else()
-  # The falcosecurity/libs git reference (branch name, commit hash, or tag) To update falcosecurity/libs version for the next release, change the
-  # default below In case you want to test against another falcosecurity/libs version just pass the variable - ie., `cmake
+  # The falcosecurity/libs git reference (branch name, commit hash, or tag) 
+  # To update falcosecurity/libs version for the next release, change the default below 
+  # In case you want to test against another falcosecurity/libs version just pass the variable - ie., `cmake
   # -DFALCOSECURITY_LIBS_VERSION=dev ..`
   if(NOT FALCOSECURITY_LIBS_VERSION)
     set(FALCOSECURITY_LIBS_VERSION "a743aa4ab28e4bd82c73f74be4f866911a4be0fa")
@@ -47,9 +50,12 @@ if(MUSL_OPTIMIZED_BUILD)
   add_definitions(-DMUSL_OPTIMIZED)
 endif()
 
-set(PROBE_VERSION "${FALCOSECURITY_LIBS_VERSION}")
-set(PROBE_NAME "falco")
+# Driver and scap defaults for Falco
+file(STRINGS ${FALCOSECURITY_LIBS_SOURCE_DIR}/driver/API_VERSION DRIVER_API_VERSION LIMIT_COUNT 1)
 set(DRIVER_PACKAGE_NAME "falco")
+set(PROBE_NAME "falco")
+set(PROBE_VERSION "${DRIVER_API_VERSION}")
+set(PROBE_DEVICE_NAME "falco")
 set(SCAP_BPF_PROBE_ENV_VAR_NAME "FALCO_BPF_PROBE")
 set(SCAP_HOST_ROOT_ENV_VAR_NAME "HOST_ROOT")
 
@@ -84,4 +90,3 @@ endif()
 
 include(libscap)
 include(libsinsp)
-
