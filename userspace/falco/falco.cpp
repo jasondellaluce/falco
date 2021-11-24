@@ -720,7 +720,8 @@ int falco_init(int argc, char **argv)
 				if(string(long_options[long_index].name) == "version")
 				{
 					printf("Falco version: %s\n", FALCO_VERSION);
-					printf("Driver version: %s\n", DRIVER_VERSION);
+					printf("Libs version: %s\n", LIBS_VERSION);
+					printf("Driver API version: %s\n", DRIVER_VERSION);
 					return EXIT_SUCCESS;
 				}
 				else if (string(long_options[long_index].name) == "cri")
@@ -917,7 +918,7 @@ int falco_init(int argc, char **argv)
 			falco_logger::set_time_format_iso_8601(config.m_time_format_iso_8601);
 
 			// log after config init because config determines where logs go
-			falco_logger::log(LOG_INFO, "Falco version " + std::string(FALCO_VERSION) + " (driver version " + std::string(DRIVER_VERSION) + ")\n");
+			falco_logger::log(LOG_INFO, "Falco version " + std::string(FALCO_VERSION) + " (driver API version " + std::string(DRIVER_VERSION) + ")\n");
 			falco_logger::log(LOG_INFO, "Falco initialized with configuration file " + conf_filename + "\n");
 		}
 		else
@@ -1164,6 +1165,13 @@ int falco_init(int argc, char **argv)
 			}
 
 			support["version"] = FALCO_VERSION;
+			support["libs_version"] = LIBS_VERSION;
+			support["driver_api_version"] = DRIVER_VERSION;
+#ifdef MUSL_OPTIMIZED_BUILD
+			support["static_build"] = true;
+#else
+			support["static_build"] = false;
+#endif
 			support["system_info"]["sysname"] = sysinfo.sysname;
 			support["system_info"]["nodename"] = sysinfo.nodename;
 			support["system_info"]["release"] = sysinfo.release;
