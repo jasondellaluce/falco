@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019 The Falco Authors.
+# Copyright (C) 2021 The Falco Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
 # the License. You may obtain a copy of the License at
@@ -97,9 +97,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -fno-strict-aliasing -DNDEBUG")
 include(GetFalcoVersion)
 
 set(PACKAGE_NAME "falco")
-set(PROBE_NAME "falco")
-set(PROBE_DEVICE_NAME "falco")
 set(DRIVERS_REPO "https://download.falco.org/driver")
+
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX
       /usr
