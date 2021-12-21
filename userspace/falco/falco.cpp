@@ -48,6 +48,7 @@ limitations under the License.
 #include "falco_engine_version.h"
 #include "config_falco.h"
 #include "statsfilewriter.h"
+#include "plugins.h"
 #ifndef MINIMAL_BUILD
 #include "webserver.h"
 #include "grpc_server.h"
@@ -937,113 +938,30 @@ int falco_init(int argc, char **argv)
 		// list.
 		filter_check_list plugin_filter_checks;
 
-		// Factories that can create filters/formatters for
-		// the (single) source supported by the (single) input plugin.
-		std::shared_ptr<gen_event_filter_factory> plugin_filter_factory(new sinsp_filter_factory(inspector, plugin_filter_checks));
-		std::shared_ptr<gen_event_formatter_factory> plugin_formatter_factory(new sinsp_evt_formatter_factory(inspector, plugin_filter_checks));
+		// Read the configuration and load all the plugins
+    	std::list<std::shared_ptr<sinsp_plugin>> loaded_plugins;
 
-		std::shared_ptr<sinsp_plugin> input_plugin;
-		std::list<std::shared_ptr<sinsp_plugin>> extractor_plugins;
-		for(auto &p : config.m_plugins)
+		// Load the plugins. If a plugin event source is specified, we set it.
+		std::string plugin_input_source = plugins_load_from_config(
+				config,
+				engine,
+				inspector,
+				loaded_plugins,
+				plugin_filter_checks);
+		if (plugin_input_source.size() > 0)
 		{
-			std::shared_ptr<sinsp_plugin> plugin;
-#ifdef MUSL_OPTIMIZED_BUILD
-			throw std::invalid_argument(string("Can not load/use plugins with musl optimized build"));
-#else
-			falco_logger::log(LOG_INFO, "Loading plugin (" + p.m_name + ") from file " + p.m_library_path + "\n");
-
-			plugin = sinsp_plugin::register_plugin(inspector,
-							       p.m_library_path,
-							       (p.m_init_config.empty() ? NULL : (char *)p.m_init_config.c_str()),
-							       plugin_filter_checks);
-#endif
-
-			if(plugin->type() == TYPE_SOURCE_PLUGIN)
-			{
-				sinsp_source_plugin *splugin = static_cast<sinsp_source_plugin *>(plugin.get());
-
-				if(input_plugin)
-				{
-					throw std::invalid_argument(string("Can not load multiple source plugins. ") + input_plugin->name() + " already loaded");
-				}
-
-				input_plugin = plugin;
-				event_source = splugin->event_source();
-
-				inspector->set_input_plugin(p.m_name);
-				if(!p.m_open_params.empty())
-				{
-					inspector->set_input_plugin_open_params(p.m_open_params.c_str());
-				}
-
-				engine->add_source(event_source, plugin_filter_factory, plugin_formatter_factory);
-
-			} else {
-				extractor_plugins.push_back(plugin);
-			}
-		}
-
-		// Ensure that extractor plugins are compatible with the event source.
-		// Also, ensure that extractor plugins don't have overlapping compatible event sources.
-		std::set<std::string> compat_sources_seen;
-		for(auto plugin : extractor_plugins)
-		{
-			// If the extractor plugin names compatible sources,
-			// ensure that the input plugin's source is in the list
-			// of compatible sources.
-			sinsp_extractor_plugin *eplugin = static_cast<sinsp_extractor_plugin *>(plugin.get());
-			const std::set<std::string> &compat_sources = eplugin->extract_event_sources();
-			if(input_plugin &&
-			   !compat_sources.empty())
-			{
-				if (compat_sources.find(event_source) == compat_sources.end())
-				{
-					throw std::invalid_argument(string("Extractor plugin not compatible with event source ") + event_source);
-				}
-
-				for(const auto &compat_source : compat_sources)
-				{
-					if(compat_sources_seen.find(compat_source) != compat_sources_seen.end())
-					{
-						throw std::invalid_argument(string("Extractor plugins have overlapping compatible event source ") + compat_source);
-					}
-					compat_sources_seen.insert(compat_source);
-				}
-			}
-		}
+			event_source = plugin_input_source;
+		} 
 
 		if(config.m_json_output)
 		{
 			syscall_formatter_factory->set_output_format(gen_event_formatter::OF_JSON);
 			k8s_audit_formatter_factory->set_output_format(gen_event_formatter::OF_JSON);
-			plugin_formatter_factory->set_output_format(gen_event_formatter::OF_JSON);
 		}
-
-		std::list<sinsp_plugin::info> infos = sinsp_plugin::plugin_infos(inspector);
 
 		if(list_plugins)
 		{
-			std::ostringstream os;
-
-			for(auto &info : infos)
-			{
-				os << "Name: " << info.name << std::endl;
-				os << "Description: " << info.description << std::endl;
-				os << "Contact: " << info.contact << std::endl;
-				os << "Version: " << info.plugin_version.as_string() << std::endl;
-
-				if(info.type == TYPE_SOURCE_PLUGIN)
-				{
-					os << "Type: source plugin" << std::endl;
-					os << "ID: " << info.id << std::endl;
-				}
-				else
-				{
-					os << "Type: extractor plugin" << std::endl;
-				}
-			}
-
-			printf("%lu Plugins Loaded:\n\n%s\n", infos.size(), os.str().c_str());
+			plugins_print_list(inspector);
 			return EXIT_SUCCESS;
 		}
 
@@ -1094,15 +1012,7 @@ int falco_init(int argc, char **argv)
 		}
 
 		// Ensure that all plugins are compatible with the loaded set of rules
-		for(auto &info : infos)
-		{
-			std::string required_version;
-
-			if(!engine->is_plugin_compatible(info.name, info.plugin_version.as_string(), required_version))
-			{
-				throw std::invalid_argument(std::string("Plugin ") + info.name + " version " + info.plugin_version.as_string() + " not compatible with required plugin version " + required_version);
-			}
-		}
+		plugins_check_engine_compatibility(engine, inspector);
 
 		// You can't both disable and enable rules
 		if((disabled_rule_substrings.size() + disabled_rule_tags.size() > 0) &&

@@ -24,6 +24,7 @@ set(
   outputs_syslog.cpp
   event_drops.cpp
   statsfilewriter.cpp
+  plugins.cpp
   falco.cpp
 )
 
